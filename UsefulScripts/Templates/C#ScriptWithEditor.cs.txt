@@ -1,0 +1,22 @@
+using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
+public class #SCRIPTNAME# : MonoBehaviour{
+
+}
+
+#if UNITY_EDITOR
+[CustomEditor(typeof(#SCRIPTNAME#))]
+class #SCRIPTNAME#Editor : Editor{
+	private #SCRIPTNAME# targetAs;
+
+	void OnEnable(){
+		targetAs = target as #SCRIPTNAME#;
+	}
+	public override void OnInspectorGUI(){
+		DrawDefaultInspector();
+	}
+}
+#endif

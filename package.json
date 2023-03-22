@@ -1,0 +1,18 @@
+{
+  "name": "com.chameleonplayground.usefulscripts",
+  "version": "1.19.1",
+  "displayName": "Useful Scripts - \u0e2a\u0e04\u0e23\u0e34\u0e1b\u0e14\u0e35\u0e21\u0e35\u0e1b\u0e23\u0e30\u0e42\u0e22\u0e0a\u0e19\u0e4c ^^",
+  "description": "Collection of useful scripts.\n\u0e2a\u0e04\u0e23\u0e34\u0e1b\u0e14\u0e35\u0e46 \u0e21\u0e35\u0e1b\u0e23\u0e30\u0e42\u0e22\u0e0a\u0e19\u0e4c\u0e07\u0e31\u0e1f ^^",
+  "unity": "2020.3",
+  "keywords": [
+    "Useful",
+    "Scripts",
+    "Chameleon"
+  ],
+  "author": {
+    "name": "Reev the Chameleon",
+    "email": "reevthechameleon@gmail.com"
+  },
+  "type": "library",
+  "unityRelease": "25f1"
+}

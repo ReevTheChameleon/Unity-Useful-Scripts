@@ -1,0 +1,123 @@
+﻿Shader "Chameleon/#SCRIPTNAME#"{
+	Properties{
+		[MainTexture] matTexture("Texture",2D) = "white"{}
+		[MainColor] matColor("Color",Color) = (1,1,1,1)
+		[MatRange] matSmoothness("Smoothness",Range(0,1)) = 0.5
+		matKd("Diffuse Coeff",float) = 0.9
+		matKs("Specular Coeff",float) = 0.1
+		[Normal][NoScaleOffset] matNormalMap("Normal Map",2D) = "bump"{} //(RGBA: 0.5,0.5,1,0.5)
+		matNormalMapStrength("Normal Map Strength",float) = 1
+	}
+	SubShader{
+		LOD 300
+		Pass{
+			Name "Main"
+			Tags{"LightMode" = "UniversalForward"}
+
+			HLSLPROGRAM
+			#pragma vertex vertexShader
+			#pragma fragment fragmentShader
+			#include "Packages/com.chameleonplayground.usefulscripts/UsefulScripts/chm_ShaderHelper.hlsl"
+
+			struct VertToFrag{
+				float4 clipPos : SV_POSITION;
+				float3 worldPos : TEXCOORD1;
+				float2 uv : TEXCOORD0;
+				float3 vertexWorldNormal : NORMAL;
+				float3 vertexWorldTangent : TEXCOORD2;
+				float3 vertexWorldBitangent : TEXCOORD3;
+			};
+			
+			half4 matColor;
+			sampler2D matTexture;
+			float4 matTexture_ST;
+			float matSmoothness;
+			float matKd;
+			float matKs;
+			sampler2D matNormalMap;
+			float matNormalMapStrength;
+
+			VertToFrag vertexShader(
+				float4 objectPos : POSITION,
+				float2 uv : TEXCOORD0,
+				float3 objectNormal : NORMAL,
+				float4 objectTangent : TANGENT
+			){
+				VertToFrag v2f = (VertToFrag)0;
+				v2f.worldPos = TransformObjectToWorld(objectPos.xyz);
+				v2f.clipPos = TransformWorldToHClip(v2f.worldPos);
+				v2f.uv = uv*matTexture_ST.xy + matTexture_ST.zw;
+				v2f.vertexWorldNormal = TransformObjectToWorldNormal(objectNormal);
+				v2f.vertexWorldTangent = TransformObjectToWorldDir(objectTangent.xyz);
+				v2f.vertexWorldBitangent =
+					objectTangent.w * cross(v2f.vertexWorldNormal,v2f.vertexWorldTangent);
+				return v2f;
+			}
+
+			half4 fragmentShader(
+				VertToFrag v2f
+			) : SV_TARGET
+			{
+				float3 pixelWorldNormal = adjustWorldNormalByNormalMap(
+					matNormalMap,
+					v2f.uv,
+					v2f.vertexWorldTangent,
+					v2f.vertexWorldBitangent,
+					v2f.vertexWorldNormal,
+					matNormalMapStrength
+				);
+				return half4(
+					simpleLitColor(
+						tex2D(matTexture,v2f.uv).xyz * matColor.xyz,
+						v2f.worldPos,
+						pixelWorldNormal,
+						matKd,
+						matKs,
+						exp2(1+10*matSmoothness)
+					)
+				,1);
+			}	
+			ENDHLSL
+		}
+		Pass{
+			Name "ShadowCaster"
+			Tags{"LightMode" = "ShadowCaster"}
+			
+			HLSLPROGRAM
+			#pragma vertex vertexShader
+			#pragma fragment fragmentShader
+			#include "UnityCG.cginc"
+
+			float4 vertexShader(
+				float4 objectPos : POSITION
+			) : SV_POSITION
+			{
+				return UnityObjectToClipPos(objectPos);
+			}
+			half4 fragmentShader() : SV_TARGET{
+				return 0;
+			}
+			ENDHLSL
+		}
+		Pass{
+			Name "DepthOnly"
+			Tags{"LightMode" = "DepthOnly"}
+			
+			HLSLPROGRAM
+			#pragma vertex vertexShader
+			#pragma fragment fragmentShader
+			#include "UnityCG.cginc"
+
+			float4 vertexShader(
+				float4 objectPos : POSITION
+			) : SV_POSITION
+			{
+				return UnityObjectToClipPos(objectPos);
+			}
+			half4 fragmentShader() : SV_TARGET{
+				return 0;
+			}
+			ENDHLSL
+		}
+	}
+}
